@@ -27,9 +27,18 @@ enum class QHOTKEYS_DLLSPEC ModifierKey
     Alt     = 1 << 3,
     Meta    = 1 << 4
 };
+Q_DECLARE_FLAGS(ModifierKeys, ModifierKey)
+
+// 为 ModifierKey 添加位运算符支持
 inline ModifierKey operator|(ModifierKey a, ModifierKey b)
 {
     return static_cast<ModifierKey>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline ModifierKey& operator|=(ModifierKey& a, ModifierKey b)
+{
+    a = a | b;
+    return a;
 }
 
 /*!
@@ -49,7 +58,8 @@ public:
      * \param modifiers The modifier keys for the hotkey (e.g. ::Control | ::Alt)
      * \param key The actual key to be registered as a hotkey
      */
-    QHotkey(const ModifierKey modifiers, const Key key);
+    // QHotkey(const QVector<Qt::ModifierKey>& modifiers, const Key key);
+    QHotkey(const QVector<int>& modifiers, const int key);
     /*!
       * \brief ~QHotkey Destroy and unhook the Hotkey
       */
@@ -66,11 +76,14 @@ signals:
 /////////////////
 ///  MEMBER   ///
 /////////////////
-private:
-    const ModifierKey _modifiers;
-    const Key _key;
-    const int _hkid;
+public:
     bool _registered;
+    // bool registrationStatus;
+private:
+    const QVector<int> _modifiers;
+    // const Key _key;
+    const int _key_int;
+    const int _hkid;
     std::thread _loop;
 
     struct PlatformData;

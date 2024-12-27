@@ -14,3 +14,5 @@ msvc {
 } else {
     SOURCES += $$PWD/src/qhotkey.cpp
 }
+
+SOURCES +=

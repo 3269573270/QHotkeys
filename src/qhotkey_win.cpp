@@ -14,12 +14,22 @@ struct Qt::QHotkey::PlatformData
     UINT wmId;
 };
 
-Qt::QHotkey::QHotkey(const Qt::ModifierKey modifiers, const Qt::Key key)
-    : _modifiers(modifiers), _key(key),
-      _hkid(_ghkid++), _registered(false),
-      _loop(&Qt::QHotkey::registerHotkey, this),
-      _pData(new PlatformData)
+Qt::QHotkey::QHotkey(const QVector<int>& modifiers, const int key)
+    : _registered(false),
+    _modifiers(modifiers),_key_int(key),
+    _hkid(_ghkid++),
+    _loop(&Qt::QHotkey::registerHotkey, this),
+    _pData(new PlatformData)
+// ,
+// registrationStatus(false)
 {}
+// Qt::QHotkey::QHotkey(const QVector<Qt::ModifierKey>& modifiers, const Qt::Key key)
+//     : _modifiers(modifiers), _key(key),
+//     _hkid(_ghkid++), _registered(false),
+//     _loop(&Qt::QHotkey::registerHotkey, this),
+//     _pData(new PlatformData),
+//     registrationStatus(false)
+// {}
 
 Qt::QHotkey::~QHotkey()
 {
@@ -32,15 +42,22 @@ Qt::QHotkey::~QHotkey()
 
 void Qt::QHotkey::registerHotkey()
 {
+    // registrationStatus = true;
     _pData->wmId = RegisterWindowMessage(L"WM_QHOTKEY_UNHOOK");
     _pData->thrId = GetCurrentThreadId();
 
+    // TODO: 改为发送信号
     if (_registered)
-        throw std::runtime_error("This QHotkey instance is already registered!");
+        // registrationStatus = false;
+        qCritical() << "有bug  This QHotkey instance is already registered!";
+    //throw std::runtime_error("This QHotkey instance is already registered!");
 
-    auto result = RegisterHotKey(NULL, _hkid, getMod(_modifiers), getKey(_key));
+    // auto result = RegisterHotKey(NULL, _hkid, getMod(_modifiers), getKey(_key));
+    auto result = RegisterHotKey(NULL, _hkid, getMod(_modifiers), _key_int);
     if (result == FALSE)
-        throw std::runtime_error("Could not register hotkey! #" + GetLastError());
+        // registrationStatus = false;
+        qCritical() << "有bug  Could not register hotkey! #";
+    // throw std::runtime_error("Could not register hotkey! #");//GetLastError()
 
     _registered = result == 0;
     messageLoop();
